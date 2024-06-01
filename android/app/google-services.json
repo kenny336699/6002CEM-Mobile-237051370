@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "680343782404",
+    "firebase_url": "https://mobile-da693-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "mobile-da693",
+    "storage_bucket": "mobile-da693.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:680343782404:android:8ee653f06541e69f7b2151",
+        "android_client_info": {
+          "package_name": "com.japen_travel"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhjss4n_4lUUxt5XtChVou5FTxPRl-l54"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:680343782404:android:5ce880b0c45edbab7b2151",
+        "android_client_info": {
+          "package_name": "com.mobile_travel"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhjss4n_4lUUxt5XtChVou5FTxPRl-l54"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

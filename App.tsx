@@ -18,46 +18,54 @@ import {
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import 'react-native-gesture-handler';
-import Citys from './src/screens/citys';
+import Citys from './src/screens/City/Citiess';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Login from './src/screens/LoginScreen';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import StackNav from './src/navigation/StackNav';
+import {Provider} from 'react-redux';
+import {persistor, store} from './src/store/store';
+
+import {fetchCitiesList} from './src/reducers/citiesReducer';
+import {useAppDispatch, useAppSelector} from './src/store/hook';
+import {PersistGate} from 'redux-persist/integration/react';
+import auth from '@react-native-firebase/auth';
+import {setLoading} from './src/reducers/appReducer';
 type SectionProps = PropsWithChildren<{
   title: string;
 }>;
 
 function App(): React.JSX.Element {
-  const [text, setText] = React.useState<string>('21321312');
-  const isDarkMode = useColorScheme() === 'dark';
-  const [cities, setCities] = useState([]);
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-  useEffect(() => {
-    const fetchCities = async () => {
-      try {
-        const citiesCollection = await firestore().collection('cities').get();
-        const citiesData = citiesCollection.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setCities(citiesData);
-      } catch (error) {
-        console.error('Error fetching cities: ', error);
-      }
-    };
-
-    fetchCities();
-  }, []);
-
   return (
-    <NavigationContainer>
-      <StackNav />
-    </NavigationContainer>
+    <Provider store={store}>
+      <Root />
+    </Provider>
   );
 }
+const Root = () => {
+  const dispatch = useAppDispatch();
+  const loading = useAppSelector(state => state.app.loading);
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    return () => subscriber(); // unsubscribe on unmount
+  }, []);
+
+  const onAuthStateChanged = user => {
+    if (loading) dispatch(setLoading(false));
+  };
+
+  useEffect(() => {
+    dispatch(fetchCitiesList());
+  }, []);
+  return (
+    <PersistGate loading={null} persistor={persistor}>
+      <NavigationContainer>
+        <StackNav />
+      </NavigationContainer>
+    </PersistGate>
+  );
+};
 
 const styles = StyleSheet.create({
   loadingContainer: {

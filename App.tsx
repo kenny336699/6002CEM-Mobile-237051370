@@ -18,7 +18,7 @@ import {
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import 'react-native-gesture-handler';
-import Citys from './src/screens/City/Citiess';
+import Citys from './src/screens/City/Cities';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Login from './src/screens/LoginScreen';
@@ -32,6 +32,7 @@ import {useAppDispatch, useAppSelector} from './src/store/hook';
 import {PersistGate} from 'redux-persist/integration/react';
 import auth from '@react-native-firebase/auth';
 import {setLoading} from './src/reducers/appReducer';
+import Loading from './src/common/Loading';
 type SectionProps = PropsWithChildren<{
   title: string;
 }>;
@@ -61,6 +62,7 @@ const Root = () => {
   return (
     <PersistGate loading={null} persistor={persistor}>
       <NavigationContainer>
+        <Loading />
         <StackNav />
       </NavigationContainer>
     </PersistGate>

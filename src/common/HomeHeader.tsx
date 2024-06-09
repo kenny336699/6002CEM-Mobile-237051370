@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
 
-const CustomHeader = () => {
+const HomeHeader = () => {
   return (
     <View style={styles.headerContainer}>
       <Image
@@ -58,4 +58,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CustomHeader;
+export default HomeHeader;

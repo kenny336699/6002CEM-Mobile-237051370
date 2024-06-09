@@ -9,15 +9,14 @@ import {useNavigation} from '@react-navigation/native';
 const Citys: React.FC = () => {
   const locations = useAppSelector(state => state.cities.locations);
   const navigation = useNavigation();
-  console.log('locations:', locations);
-  const navigateToAttractions = id => {
-    navigation.navigate('Attractions', {cityId: id});
+  const navigateToCity = (id: number) => {
+    navigation.navigate('City', {cityId: id});
   };
   const renderCity = ({item}: {item: City}) => (
     <Pressable
       style={styles.cityContainer}
       onPress={() => {
-        navigateToAttractions(item.id);
+        navigateToCity(item.id);
       }}>
       <Text style={styles.cityName}>{item.name}</Text>
       <FastImage source={{uri: item.image_url}} style={styles.cityImage} />

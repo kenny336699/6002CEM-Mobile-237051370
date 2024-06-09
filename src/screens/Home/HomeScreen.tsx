@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import {View, Text, StyleSheet, FlatList, Image} from 'react-native';
 import {useAppSelector} from '../../store/hook';
-import Citys from '../City/Citiess';
+import Citys from '../City/Cities';
 import CustomHeader from '../../common/HomeHeader';
 
 export default function HomeScreen() {

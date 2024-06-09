@@ -6,68 +6,98 @@ import {
   Image,
   StyleSheet,
   ActivityIndicator,
+  Pressable,
 } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import getWeatherForecast from '../../api/weather';
 import {City} from '../../type/city';
-const AttractionsScreen = ({route}) => {
+import {WeatherEntry} from '../../type/weather';
+import WeatherComponent from '../../common/WeatherComponent';
+import CustomHeader from '../../common/CustomHeader';
+import {useAppDispatch} from '../../store/hook';
+import {setLoading} from '../../reducers/appReducer';
+import {useNavigation} from '@react-navigation/native';
+
+type CityScreenProps = {
+  route: {
+    params: {
+      cityId: string;
+    };
+  };
+};
+
+type Attraction = {
+  id: string;
+  name: string;
+  image_url: string;
+  description: string;
+};
+
+const CityScreen = ({route}: CityScreenProps) => {
   const {cityId} = route.params;
   const [city, setCity] = useState<City | null>(null);
-  const [attractions, setAttractions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [attractions, setAttractions] = useState<Attraction[]>([]);
 
+  const [weather, setWeather] = useState<WeatherEntry[]>();
+  const dispatch = useAppDispatch();
+  const nav = useNavigation();
   useEffect(() => {
     const fetchCityData = async () => {
+      dispatch(setLoading(true));
       try {
         const cityDoc = await firestore()
           .collection('cities')
           .doc(cityId)
           .get();
         if (cityDoc.exists) {
-          const cityData: City = cityDoc.data();
+          const cityData = cityDoc.data() as City;
           setCity(cityData);
           const attractionRefs = cityData.attractions || [];
           const attractionDocs = await Promise.all(
             attractionRefs.map(ref => ref.get()),
           );
-          const attractionData = attractionDocs.map(doc => doc.data());
+          const attractionData = attractionDocs.map(
+            doc => ({id: doc.id, ...doc.data()} as Attraction),
+          );
           getWeatherForecast(
             cityData.coordinates.latitude,
             cityData.coordinates.longitude,
-          ).then(weather => {});
+          ).then(weather => {
+            weather.shift();
+            setWeather(weather);
+          });
           setAttractions(attractionData);
         }
       } catch (error) {
         console.error('Error getting city and attractions:', error);
       } finally {
-        setLoading(false);
+        dispatch(setLoading(false));
       }
     };
 
     fetchCityData();
   }, [cityId]);
 
-  const renderItem = ({item}) => (
-    <View style={styles.itemContainer}>
+  const renderItem = ({item}: {item: Attraction}) => (
+    <Pressable
+      style={styles.itemContainer}
+      onPress={() => {
+        nav.navigate('Attraction', {attraction: item});
+      }}>
       <Text style={styles.title}>{item.name}</Text>
       <Image source={{uri: item.image_url}} style={styles.image} />
-      <Text style={styles.description}>{item.description}</Text>
-    </View>
+    </Pressable>
   );
-
-  if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
-  }
 
   return (
     <View style={styles.container}>
+      <CustomHeader title={city?.name || 'City'} back />
       {city && (
         <View style={styles.cityContainer}>
-          <Text style={styles.cityName}>{city.name}</Text>
-
           <Text style={styles.cityDescription}>{city.description}</Text>
         </View>
       )}
+      {weather && weather?.length > 0 && <WeatherComponent weather={weather} />}
       <FlatList
         data={attractions}
         renderItem={renderItem}
@@ -117,9 +147,14 @@ const styles = StyleSheet.create({
     height: 200,
     marginBottom: 5,
   },
+  weatherImage: {
+    width: 80,
+    height: 80,
+    resizeMode: 'contain',
+  },
   description: {
     fontSize: 16,
   },
 });
 
-export default AttractionsScreen;
+export default CityScreen;

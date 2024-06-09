@@ -1,6 +1,8 @@
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import BottomTabNav from './BottomTabNav';
-import AttractionsScreen from '../screens/City/AttractionsScreen';
+
+import CityScreen from '../screens/City/CityScreen';
+import AttractionScreen from '../screens/City/AttractionScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -13,7 +15,16 @@ function StackNav() {
           component={BottomTabNav}
           options={{headerShown: false}}
         />
-        <Stack.Screen name="Attractions" component={AttractionsScreen} />
+        <Stack.Screen
+          name="City"
+          component={CityScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="Attraction"
+          component={AttractionScreen}
+          options={{headerShown: false}}
+        />
       </Stack.Navigator>
     </>
   );

@@ -1,45 +1,33 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RootState } from "../../redux/store";
-import { userProfile } from "../../types/user";
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {profile, userState} from '../type/user';
+import {RootState} from '../store/store';
 
 // Define the initial state interface
 interface UserState {
-  uid: number | null;
-  auth: string | null;
-  userProfile: userProfile | null;
+  userProfile: profile | null;
 }
 
 // Define the initial state
 const initialState: UserState = {
-  uid: null,
-  auth: null,
   userProfile: null,
 };
 
 // Create the user slice
 const userSlice = createSlice({
-  name: "user",
+  name: 'user',
   initialState,
   reducers: {
-    setUid: (state, action: PayloadAction<number>) => {
-      state.uid = action.payload;
-    },
-    setAuth: (state, action: PayloadAction<string>) => {
-      state.auth = action.payload;
-    },
-    setUserProfile: (state, action: PayloadAction<userProfile>) => {
+    setUserProfile: (state, action: PayloadAction<profile>) => {
+      console.log('action', action.payload);
       state.userProfile = action.payload;
     },
-    clearUser: (state) => {
-      state.uid = null;
-      state.auth = null;
+    clearUser: state => {
       state.userProfile = null;
     },
   },
 });
 
 // Export actions and reducer
-export const { setUid, clearUser, setAuth, setUserProfile } = userSlice.actions;
+export const {clearUser, setUserProfile} = userSlice.actions;
 export default userSlice.reducer;
 export const isLogin = (state: RootState) => state?.user?.uid != null;
-export const getToken = (state: RootState) => state?.user?.auth ?? "";

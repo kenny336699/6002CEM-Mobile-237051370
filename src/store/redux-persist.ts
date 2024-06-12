@@ -13,7 +13,7 @@ const reduxStorage = new MMKVLoader()
 const persistConfig = {
   key: 'root',
   storage: reduxStorage,
-  whitelist: [],
+  whitelist: ['user'],
 };
 
 export {persistConfig};

@@ -2,22 +2,18 @@ import {useNavigation} from '@react-navigation/native';
 import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
 import auth from '@react-native-firebase/auth';
+import {useAppDispatch, useAppSelector} from '../store/hook';
+import {setUserProfile} from '../reducers/userReducer';
 
 const HomeHeader = () => {
   const nav = useNavigation();
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const unsubscribe = auth().onAuthStateChanged(user => {
-      setUser(user);
-    });
-    return unsubscribe; // Cleanup subscription on unmount
-  }, []);
-
+  const profile = useAppSelector(state => state.user.userProfile);
+  const dispatch = useAppDispatch();
+  console.log('profile', profile);
   const handleSignOut = async () => {
     try {
       await auth().signOut();
-      setUser(null);
+      dispatch(setUserProfile(null));
       nav.navigate('Home');
     } catch (error) {
       console.error(error);
@@ -32,10 +28,15 @@ const HomeHeader = () => {
       />
       <View style={styles.content}>
         <Text style={styles.title}>Japan Travel</Text>
-        {user ? (
-          <TouchableOpacity style={styles.signInButton} onPress={handleSignOut}>
-            <Text style={styles.signInText}>Sign Out</Text>
-          </TouchableOpacity>
+        {profile ? (
+          <View>
+            <Text>Welcome, {profile.displayName}</Text>
+            <TouchableOpacity
+              style={styles.signInButton}
+              onPress={handleSignOut}>
+              <Text style={styles.signInText}>Sign Out</Text>
+            </TouchableOpacity>
+          </View>
         ) : (
           <TouchableOpacity
             style={styles.signInButton}

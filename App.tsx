@@ -33,6 +33,7 @@ import {PersistGate} from 'redux-persist/integration/react';
 import auth from '@react-native-firebase/auth';
 import {setLoading} from './src/reducers/appReducer';
 import Loading from './src/common/Loading';
+import {clearUser, setUserProfile} from './src/reducers/userReducer';
 
 function App(): React.JSX.Element {
   return (
@@ -44,6 +45,7 @@ function App(): React.JSX.Element {
 const Root = () => {
   const dispatch = useAppDispatch();
   const loading = useAppSelector(state => state.app.loading);
+
   useEffect(() => {
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
     //firebaseHelper.addLandmarks();
@@ -51,6 +53,15 @@ const Root = () => {
   }, []);
 
   const onAuthStateChanged = user => {
+    console.log('user', user);
+    if (user) {
+      dispatch(
+        setUserProfile({email: user.email, displayName: user.displayName}),
+      );
+    } else {
+      dispatch(clearUser());
+    }
+
     if (loading) dispatch(setLoading(false));
   };
 

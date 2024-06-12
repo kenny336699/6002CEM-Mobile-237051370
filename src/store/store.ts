@@ -5,6 +5,7 @@ import {persistReducer, persistStore} from 'redux-persist';
 import {persistConfig} from './redux-persist';
 import citiesReducer from '../reducers/citiesReducer';
 import appReducer from '../reducers/appReducer';
+import userReducer from '../reducers/userReducer';
 const logger = createLogger({
   // ...options
 });
@@ -12,6 +13,7 @@ const logger = createLogger({
 const rootReducer = combineReducers({
   cities: citiesReducer,
   app: appReducer,
+  user: userReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

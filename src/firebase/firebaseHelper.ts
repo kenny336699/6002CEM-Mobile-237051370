@@ -176,7 +176,8 @@ const addLandmarks = async () => {
 
 const firebaseLogin = async (email: string, password: string) => {
   try {
-    await auth().signInWithEmailAndPassword(email, password);
+    const data = await auth().signInWithEmailAndPassword(email, password);
+    console.log('User signed in!', data);
     return {success: true};
   } catch (error) {
     let errorMessage = 'An error occurred during login.';
@@ -216,8 +217,8 @@ const firebaseRegister = async (
     await user.updateProfile({
       displayName: displayName,
     });
-
-    console.log('User account created & signed in with display name!');
+    const resut = await auth().signOut();
+    return resut;
   } catch (error) {
     // Handle different error cases
     switch (error.code) {

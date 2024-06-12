@@ -1,6 +1,6 @@
 import firestore from '@react-native-firebase/firestore';
 import {Attraction, City} from '../type/city';
-import FastTranslator from 'fast-mlkit-translate-text';
+import auth from '@react-native-firebase/auth';
 
 const fetchCities = async (): Promise<City[]> => {
   try {
@@ -9,7 +9,7 @@ const fetchCities = async (): Promise<City[]> => {
       id: doc.id,
       ...doc.data(),
     }));
-    console.log('c', citiesData);
+
     return citiesData as City[];
   } catch (error) {
     console.error('Error fetching cities: ', error);
@@ -173,4 +173,78 @@ const addLandmarks = async () => {
     }
   }
 };
-export default {fetchCityWithAttractions, fetchCities, addLandmarks};
+
+const firebaseLogin = async (email: string, password: string) => {
+  try {
+    await auth().signInWithEmailAndPassword(email, password);
+    return {success: true};
+  } catch (error) {
+    let errorMessage = 'An error occurred during login.';
+
+    switch (error.code) {
+      case 'auth/user-not-found':
+        errorMessage = 'No user found with this email.';
+        break;
+      case 'auth/wrong-password':
+        errorMessage = 'Incorrect password.';
+        break;
+      case 'auth/invalid-email':
+        errorMessage = 'Invalid email address.';
+        break;
+      default:
+        errorMessage = error.message;
+        break;
+    }
+
+    return {success: false, errorMessage};
+  }
+};
+const firebaseRegister = async (
+  email: string,
+  password: string,
+  displayName: string,
+) => {
+  try {
+    // Create user with email and password
+    const userCredential = await auth().createUserWithEmailAndPassword(
+      email,
+      password,
+    );
+    const user = userCredential.user;
+
+    // Update the user's profile with the display name
+    await user.updateProfile({
+      displayName: displayName,
+    });
+
+    console.log('User account created & signed in with display name!');
+  } catch (error) {
+    // Handle different error cases
+    switch (error.code) {
+      case 'auth/email-already-in-use':
+        console.log('That email address is already in use!');
+        break;
+      case 'auth/invalid-email':
+        console.log('That email address is invalid!');
+        break;
+      case 'auth/weak-password':
+        console.log('The password is too weak.');
+        break;
+      default:
+        console.error('Error creating user:', error.message);
+        break;
+    }
+  }
+};
+
+const firebaseLogout = () => {
+  auth()
+    .signOut()
+    .then(() => console.log('User signed out!'));
+};
+export default {
+  fetchCityWithAttractions,
+  fetchCities,
+  firebaseLogin,
+  firebaseRegister,
+};

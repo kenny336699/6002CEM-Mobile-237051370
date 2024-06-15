@@ -8,6 +8,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <CustomHeader />
+
       <Citys />
     </View>
   );

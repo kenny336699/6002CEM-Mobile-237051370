@@ -14,7 +14,7 @@ export const fetchCitiesList = createAsyncThunk(
   async (_, {rejectWithValue}) => {
     try {
       const response = await firebaseHelper.fetchCities();
-      console.log('fetchCities response', response);
+
       return response;
     } catch (error) {
       return rejectWithValue(
@@ -35,9 +35,7 @@ const citiesSlice = createSlice({
   },
   extraReducers: builder => {
     builder.addCase(fetchCitiesList.fulfilled, (state, action) => {
-      console.log('Action payload:', action.payload);
-      state.locations = action.payload || []; // Ensure locations is always an array
-      console.log('Updated state.locations:', state.locations);
+      state.locations = action.payload || []; // Ensure locations is always an arrayfetchCities
     });
   },
 });

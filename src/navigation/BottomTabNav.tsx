@@ -1,6 +1,6 @@
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/Home/HomeScreen';
-import ItineraryScreen from '../screens/Itinerary/ItineraryScreen';
+import TripScreen from '../screens/Trip/TripScreen';
 import TranslateScreen from '../screens/Translate/TranslateScreen';
 
 import FastImage from 'react-native-fast-image';
@@ -37,8 +37,8 @@ function BottomTabNav() {
         }}
       />
       <Tab.Screen
-        name="Itinerary"
-        component={ItineraryScreen}
+        name="Trip"
+        component={TripScreen}
         options={{
           tabBarLabel: 'Plan',
           tabBarIcon: ({focused}) => {

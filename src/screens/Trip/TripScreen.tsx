@@ -8,71 +8,17 @@ import {
   FirebaseFirestoreTypes,
   firebase,
 } from '@react-native-firebase/firestore';
-import {format} from 'date-fns';
+import {format, set} from 'date-fns';
 import {Trip} from '../../type/trip';
+import firebaseHelper from '../../firebase/firebaseHelper';
 
 interface TripScreenProps {
   navigation: NavigationProp<any>;
 }
 
 const TripScreen: React.FC<TripScreenProps> = ({navigation}) => {
-  const [trips, setTrips] = useState<Trip[]>([]);
   const profile = useAppSelector(state => state.user.userProfile);
-
-  useEffect(() => {
-    if (profile) {
-      fetchTrips();
-    }
-  }, [profile]);
-
-  const fetchTrips = async () => {
-    if (!profile?.email) return;
-
-    try {
-      const tripsRef = firebase.firestore().collection('trips');
-      const querySnapshot = await tripsRef
-        .where('user_id', '==', profile.email)
-        .get();
-
-      const tripsData: Trip[] = querySnapshot.docs.map(doc => {
-        const data = doc.data() as Trip;
-        const startDate =
-          data.start_date instanceof firebase.firestore.Timestamp
-            ? data.start_date
-            : null;
-        const endDate =
-          data.end_date instanceof firebase.firestore.Timestamp
-            ? data.end_date
-            : null;
-
-        return {
-          id: doc.id,
-          user_id: data.user_id,
-          trip_name: data.trip_name,
-          start_date: startDate,
-          end_date: endDate,
-          days: data.days || [],
-        };
-      });
-
-      setTrips(tripsData);
-    } catch (error) {
-      console.error('Error fetching trips: ', error);
-    }
-  };
-
-  const formatDate = (
-    date: FirebaseFirestoreTypes.Timestamp | null,
-  ): string => {
-    if (!date) return 'Invalid Date';
-
-    try {
-      return format(date.toDate(), 'dd MMMM yyyy');
-    } catch (error) {
-      console.error('Error formatting date: ', error);
-      return 'Invalid Date';
-    }
-  };
+  const trip = useAppSelector(state => state.trips.trips);
 
   const calculateTotalDays = (
     startDate: FirebaseFirestoreTypes.Timestamp | null,
@@ -95,9 +41,11 @@ const TripScreen: React.FC<TripScreenProps> = ({navigation}) => {
       onPress={() => navigation.navigate('TripDetail', {tripData: item})}>
       <Text style={styles.tripName}>{item.trip_name}</Text>
       <Text style={styles.tripDate}>
-        Start Date: {formatDate(item.start_date)}
+        Start Date: {firebaseHelper.formatDate(item.start_date)}
       </Text>
-      <Text style={styles.tripDate}>End Date: {formatDate(item.end_date)}</Text>
+      <Text style={styles.tripDate}>
+        End Date: {firebaseHelper.formatDate(item.end_date)}
+      </Text>
       <Text style={styles.tripDays}>
         Total Days: {calculateTotalDays(item.start_date, item.end_date)}
       </Text>
@@ -108,7 +56,7 @@ const TripScreen: React.FC<TripScreenProps> = ({navigation}) => {
     <View style={styles.screen}>
       <CustomHeader title="Trip" back={false} />
       <FlatList
-        data={trips}
+        data={trip}
         keyExtractor={trip => trip.id}
         renderItem={renderTrip}
         ListEmptyComponent={

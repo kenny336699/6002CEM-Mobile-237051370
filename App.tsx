@@ -34,6 +34,7 @@ import auth from '@react-native-firebase/auth';
 import {setLoading} from './src/reducers/appReducer';
 import Loading from './src/common/Loading';
 import {clearUser, setUserProfile} from './src/reducers/userReducer';
+import {fetchTrips} from './src/reducers/tripReducer';
 
 function App(): React.JSX.Element {
   return (
@@ -53,11 +54,11 @@ const Root = () => {
   }, []);
 
   const onAuthStateChanged = user => {
-    console.log('user', user);
     if (user) {
       dispatch(
         setUserProfile({email: user.email, displayName: user.displayName}),
       );
+      dispatch(fetchTrips(user.email));
     } else {
       dispatch(clearUser());
     }

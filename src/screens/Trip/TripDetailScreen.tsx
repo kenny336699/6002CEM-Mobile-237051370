@@ -6,6 +6,7 @@ import {
   FlatList,
   ActivityIndicator,
   Pressable,
+  TouchableOpacity,
 } from 'react-native';
 import CustomHeader from '../../common/CustomHeader';
 import {
@@ -19,6 +20,7 @@ import firestore, {
 } from '@react-native-firebase/firestore';
 import {Trip} from '../../type/trip';
 import {Attraction} from '../../type/city';
+import firebaseHelper from '../../firebase/firebaseHelper';
 
 interface TripDetailScreenProps {
   navigation: NavigationProp<any>;
@@ -33,7 +35,7 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
   const [attractions, setAttractions] = useState<Map<string, Attraction>>(
     new Map(),
   );
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const nav = useNavigation();
 
   useEffect(() => {
@@ -44,33 +46,9 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
 
   const fetchAttractionDetails = async (days: Trip['days']) => {
     try {
-      const attractionRefs = [
-        ...days.map(day => day.morning),
-        ...days.map(day => day.afternoon),
-      ].filter(
-        (ref): ref is FirebaseFirestoreTypes.DocumentReference => ref !== null,
-      );
-
-      const attractionSnapshots = await Promise.all(
-        attractionRefs.map(ref => ref.get()),
-      );
-
-      const attractionsMap = new Map<string, Attraction>();
-      attractionSnapshots.forEach(doc => {
-        const data = doc.data();
-        if (data) {
-          attractionsMap.set(doc.id, {
-            id: doc.id,
-            name: data.name,
-            description: data.description,
-            cityId: data.cityId,
-            image_url: data.image_url,
-            coordinates: data.coordinates,
-          });
-        }
-      });
-
-      setAttractions(attractionsMap);
+      setLoading(true);
+      const attractionRefs = await firebaseHelper.fetchAttractionDetails(days);
+      setAttractions(attractionRefs);
     } catch (error) {
       console.error('Error fetching attraction details: ', error);
     } finally {
@@ -78,27 +56,21 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
     }
   };
 
-  const formatDate = (
-    date: FirebaseFirestoreTypes.Timestamp | null,
-  ): string => {
-    if (!date) return 'Invalid Date';
-
-    try {
-      return format(date.toDate(), 'dd MMMM yyyy');
-    } catch (error) {
-      console.error('Error formatting date: ', error);
-      return 'Invalid Date';
-    }
+  const deleteDay = (index: number) => {
+    // Implement the logic to delete the day from the tripData.days array and update the Firestore if necessary
+    console.log(`Deleting day at index: ${index}`);
   };
 
   const renderDay = ({
     item,
+    index,
   }: {
     item: {
       date: FirebaseFirestoreTypes.Timestamp | null;
       morning: FirebaseFirestoreTypes.DocumentReference | null;
       afternoon: FirebaseFirestoreTypes.DocumentReference | null;
     };
+    index: number;
   }) => {
     const {date, morning, afternoon} = item;
 
@@ -109,6 +81,11 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
 
     return (
       <View style={styles.dayContainer}>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => deleteDay(index)}>
+          <Text style={styles.deleteButtonText}>X</Text>
+        </TouchableOpacity>
         <Text style={styles.dayDate}>
           Date: {date ? format(date.toDate(), 'dd MMMM yyyy') : 'Unknown Date'}
         </Text>
@@ -194,10 +171,10 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
               {tripData.trip_name || 'Unnamed Trip'}
             </Text>
             <Text style={styles.tripDate}>
-              Start Date: {formatDate(tripData.start_date)}
+              Start Date: {firebaseHelper.formatDate(tripData.start_date)}
             </Text>
             <Text style={styles.tripDate}>
-              End Date: {formatDate(tripData.end_date)}
+              End Date: {firebaseHelper.formatDate(tripData.end_date)}
             </Text>
           </View>
           {tripData.days && tripData.days.length > 0 ? (
@@ -205,6 +182,7 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
               data={tripData.days.filter(day => day.date !== null)}
               keyExtractor={(item, index) => index.toString()}
               renderItem={renderDay}
+              contentContainerStyle={styles.listContent}
             />
           ) : (
             <View style={styles.noDaysContainer}>
@@ -213,6 +191,13 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
           )}
         </>
       )}
+      <TouchableOpacity
+        style={styles.saveButton}
+        onPress={() => {
+          /* Handle save action */
+        }}>
+        <Text style={styles.saveButtonText}>Save</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -252,6 +237,23 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 5,
+    position: 'relative', // Needed for absolute positioning of delete button
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'red',
+    borderRadius: 20,
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deleteButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   dayDate: {
     fontSize: 18,
@@ -309,6 +311,30 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 18,
     color: 'red',
+  },
+  listContent: {
+    paddingBottom: 80, // To ensure Save button doesn't overlap with the list
+  },
+  saveButton: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
+    backgroundColor: '#28a745',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  saveButtonText: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });
 

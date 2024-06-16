@@ -4,6 +4,7 @@ import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
 import auth from '@react-native-firebase/auth';
 import {useAppDispatch, useAppSelector} from '../store/hook';
 import {setUserProfile} from '../reducers/userReducer';
+import firebaseHelper from '../firebase/firebaseHelper';
 
 const HomeHeader = () => {
   const nav = useNavigation();
@@ -12,7 +13,7 @@ const HomeHeader = () => {
   console.log('profile', profile);
   const handleSignOut = async () => {
     try {
-      await auth().signOut();
+      firebaseHelper.firebaseLogout();
       dispatch(setUserProfile(null));
       nav.navigate('Home');
     } catch (error) {

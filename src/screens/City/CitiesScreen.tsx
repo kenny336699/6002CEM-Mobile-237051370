@@ -1,14 +1,13 @@
 import React, {useEffect} from 'react';
 import {View, Text, StyleSheet, FlatList, Image} from 'react-native';
 import {useAppSelector} from '../../store/hook';
-import Citys from '../City/Cities';
-import HomeHeader from '../../common/HomeHeader';
+import Citys from './Cities';
+import CustomHeader from '../../common/CustomHeader';
 
-export default function HomeScreen() {
+export default function CitiesScreen() {
   return (
     <View style={styles.container}>
-      <HomeHeader />
-      <Citys />
+      <CustomHeader title={'City'} back={false} />
     </View>
   );
 }

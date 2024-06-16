@@ -12,3 +12,6 @@ export type Trip = {
     afternoon: FirebaseFirestoreTypes.DocumentReference | null;
   }>;
 };
+export type TripState = {
+  trips: Trip[];
+};

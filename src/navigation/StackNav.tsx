@@ -5,6 +5,7 @@ import CityScreen from '../screens/City/CityScreen';
 import AttractionScreen from '../screens/City/AttractionScreen';
 import LoginScreen from '../screens/Auth/LoginScreen';
 import TripDetailScreen from '../screens/Trip/TripDetailScreen';
+import CitiesScreen from '../screens/City/CitiesScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -35,6 +36,11 @@ function StackNav() {
         <Stack.Screen
           name="TripDetail"
           component={TripDetailScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="Cities"
+          component={CitiesScreen}
           options={{headerShown: false}}
         />
       </Stack.Navigator>

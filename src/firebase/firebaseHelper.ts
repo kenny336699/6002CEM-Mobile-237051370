@@ -1,6 +1,11 @@
-import firestore from '@react-native-firebase/firestore';
+import firestore, {
+  FirebaseFirestoreTypes,
+  firebase,
+} from '@react-native-firebase/firestore';
 import {Attraction, City} from '../type/city';
 import auth from '@react-native-firebase/auth';
+import {format} from 'date-fns';
+import {Trip} from '../type/trip';
 
 const fetchCities = async (): Promise<City[]> => {
   try {
@@ -232,20 +237,96 @@ const firebaseRegister = async (
         console.log('The password is too weak.');
         break;
       default:
-        console.error('Error creating user:', error.message);
+        console.error('Error creating user:');
         break;
     }
   }
 };
+const fetchAttractionDetails = async (days: Trip['days']) => {
+  try {
+    const attractionRefs = [
+      ...days.map(day => day.morning),
+      ...days.map(day => day.afternoon),
+    ].filter(
+      (ref): ref is FirebaseFirestoreTypes.DocumentReference => ref !== null,
+    );
 
+    const attractionSnapshots = await Promise.all(
+      attractionRefs.map(ref => ref.get()),
+    );
+
+    const attractionsMap = new Map<string, Attraction>();
+    attractionSnapshots.forEach(doc => {
+      const data = doc.data();
+      if (data) {
+        attractionsMap.set(doc.id, {
+          id: doc.id,
+          name: data.name,
+          description: data.description,
+          cityId: data.cityId,
+          image_url: data.image_url,
+          coordinates: data.coordinates,
+        });
+      }
+    });
+    return attractionsMap;
+  } catch (error) {}
+};
 const firebaseLogout = () => {
   auth()
     .signOut()
     .then(() => console.log('User signed out!'));
 };
+const formatDate = (date: FirebaseFirestoreTypes.Timestamp | null): string => {
+  if (!date) return 'Invalid Date';
+
+  try {
+    return format(date.toDate(), 'dd MMMM yyyy');
+  } catch (error) {
+    console.error('Error formatting date: ', error);
+    return 'Invalid Date';
+  }
+};
+
+const fetchTrips = async (email: string) => {
+  try {
+    const tripsRef = firestore().collection('trips');
+    const querySnapshot = await tripsRef.where('user_id', '==', email).get();
+
+    const tripsData: Trip[] = querySnapshot.docs.map(doc => {
+      const data = doc.data() as Trip;
+      const startDate =
+        data.start_date instanceof firebase.firestore.Timestamp
+          ? data.start_date
+          : null;
+      const endDate =
+        data.end_date instanceof firebase.firestore.Timestamp
+          ? data.end_date
+          : null;
+
+      return {
+        id: doc.id,
+        user_id: data.user_id,
+        trip_name: data.trip_name,
+        start_date: startDate,
+        end_date: endDate,
+        days: data.days || [],
+      };
+    });
+    return tripsData;
+  } catch (error) {
+    console.error('Error fetching trips: ', error);
+    throw error;
+  }
+};
+
 export default {
   fetchCityWithAttractions,
   fetchCities,
   firebaseLogin,
   firebaseRegister,
+  firebaseLogout,
+  formatDate,
+  fetchAttractionDetails,
+  fetchTrips,
 };

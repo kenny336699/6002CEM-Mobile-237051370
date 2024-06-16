@@ -5,9 +5,14 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
+  Pressable,
 } from 'react-native';
 import CustomHeader from '../../common/CustomHeader';
-import {RouteProp, NavigationProp} from '@react-navigation/native';
+import {
+  RouteProp,
+  NavigationProp,
+  useNavigation,
+} from '@react-navigation/native';
 import {format} from 'date-fns';
 import firestore, {
   FirebaseFirestoreTypes,
@@ -29,6 +34,7 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
     new Map(),
   );
   const [loading, setLoading] = useState(true);
+  const nav = useNavigation();
 
   useEffect(() => {
     if (tripData) {
@@ -58,7 +64,7 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
             name: data.name,
             description: data.description,
             cityId: data.cityId,
-            imageUrl: data.imageUrl,
+            image_url: data.image_url,
             coordinates: data.coordinates,
           });
         }
@@ -93,28 +99,86 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
       morning: FirebaseFirestoreTypes.DocumentReference | null;
       afternoon: FirebaseFirestoreTypes.DocumentReference | null;
     };
-  }) => (
-    <View style={styles.dayContainer}>
-      <Text style={styles.dayDate}>
-        Date:{' '}
-        {item.date
-          ? format(item.date.toDate(), 'dd MMMM yyyy')
-          : 'Unknown Date'}
-      </Text>
-      <Text style={styles.dayActivity}>
-        Morning:{' '}
-        {item.morning
-          ? attractions.get(item.morning.id)?.name || 'Loading...'
-          : 'No Activity'}
-      </Text>
-      <Text style={styles.dayActivity}>
-        Afternoon:{' '}
-        {item.afternoon
-          ? attractions.get(item.afternoon.id)?.name || 'Loading...'
-          : 'No Activity'}
-      </Text>
-    </View>
-  );
+  }) => {
+    const {date, morning, afternoon} = item;
+
+    const morningAttraction = morning ? attractions.get(morning.id) : null;
+    const afternoonAttraction = afternoon
+      ? attractions.get(afternoon.id)
+      : null;
+
+    return (
+      <View style={styles.dayContainer}>
+        <Text style={styles.dayDate}>
+          Date: {date ? format(date.toDate(), 'dd MMMM yyyy') : 'Unknown Date'}
+        </Text>
+
+        <View style={styles.activityContainer}>
+          <Text style={styles.activityText}>
+            Morning:{' '}
+            {morning ? morningAttraction?.name || 'Loading...' : 'No Activity'}
+          </Text>
+          <View style={styles.buttonRow}>
+            <Pressable
+              style={styles.button}
+              onPress={() => {
+                if (morningAttraction) {
+                  navigation.navigate('Attraction', {
+                    attraction: morningAttraction,
+                  });
+                }
+              }}>
+              <Text style={styles.buttonText}>View</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.button, styles.secondaryButton]}
+              onPress={() => {
+                if (morningAttraction) {
+                  navigation.navigate('EditAttraction', {
+                    attraction: morningAttraction,
+                  });
+                }
+              }}>
+              <Text style={styles.buttonText}>Change</Text>
+            </Pressable>
+          </View>
+        </View>
+
+        <View style={styles.activityContainer}>
+          <Text style={styles.activityText}>
+            Afternoon:{' '}
+            {afternoon
+              ? afternoonAttraction?.name || 'Loading...'
+              : 'No Activity'}
+          </Text>
+          <View style={styles.buttonRow}>
+            <Pressable
+              style={styles.button}
+              onPress={() => {
+                if (afternoonAttraction) {
+                  navigation.navigate('Attraction', {
+                    attraction: afternoonAttraction,
+                  });
+                }
+              }}>
+              <Text style={styles.buttonText}>View</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.button, styles.secondaryButton]}
+              onPress={() => {
+                if (afternoonAttraction) {
+                  navigation.navigate('EditAttraction', {
+                    attraction: afternoonAttraction,
+                  });
+                }
+              }}>
+              <Text style={styles.buttonText}>Change</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.screen}>
@@ -192,11 +256,36 @@ const styles = StyleSheet.create({
   dayDate: {
     fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 10,
   },
-  dayActivity: {
+  activityContainer: {
+    marginBottom: 10,
+  },
+  activityText: {
     fontSize: 16,
     color: '#555',
-    marginTop: 5,
+    marginBottom: 5,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  button: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#007BFF',
+    borderRadius: 8,
+    alignItems: 'center',
+    marginHorizontal: 5,
+    flex: 1,
+  },
+  secondaryButton: {
+    backgroundColor: '#6c757d',
+  },
+  buttonText: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: 'bold',
   },
   noDaysContainer: {
     flex: 1,

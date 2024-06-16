@@ -17,7 +17,7 @@ export type Attraction = {
   id: string;
   cityId: any; // You can replace 'any' with the appropriate Firestore reference type if available
   name: string;
-  imageUrl: string;
+  image_url: string;
   description: string;
   coordinates: {
     latitude: number;

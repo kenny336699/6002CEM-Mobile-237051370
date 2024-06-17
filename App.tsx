@@ -18,7 +18,7 @@ import {
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import 'react-native-gesture-handler';
-import Citys from './src/screens/City/Cities';
+import Citys from './src/screens/City/CityList';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Login from './src/screens/LoginScreen';

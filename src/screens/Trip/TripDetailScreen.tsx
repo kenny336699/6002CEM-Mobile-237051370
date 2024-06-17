@@ -18,9 +18,11 @@ import {format} from 'date-fns';
 import firestore, {
   FirebaseFirestoreTypes,
 } from '@react-native-firebase/firestore';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import {Trip} from '../../type/trip';
 import {Attraction} from '../../type/city';
 import firebaseHelper from '../../firebase/firebaseHelper';
+import CommonButton from '../../common/CommonButton';
 
 interface TripDetailScreenProps {
   navigation: NavigationProp<any>;
@@ -36,6 +38,10 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
     new Map(),
   );
   const [loading, setLoading] = useState(false);
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [isStartPicker, setIsStartPicker] = useState(true);
+  const [trip, setTrip] = useState<Trip>(tripData);
+  const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
   const nav = useNavigation();
 
   useEffect(() => {
@@ -57,8 +63,78 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
   };
 
   const deleteDay = (index: number) => {
-    // Implement the logic to delete the day from the tripData.days array and update the Firestore if necessary
+    // Implement the logic to delete the day from the tripData.days array and update Firestore if necessary
     console.log(`Deleting day at index: ${index}`);
+  };
+
+  const saveTrip = async () => {
+    try {
+      await firestore().collection('trips').doc(trip.id).update({
+        start_date: trip.start_date,
+        end_date: trip.end_date,
+        days: trip.days, // Update the days array
+      });
+      console.log('Trip saved.');
+    } catch (error) {
+      console.error('Error saving trip: ', error);
+    }
+  };
+
+  const showDatePicker = (isStart: boolean) => {
+    setIsStartPicker(isStart);
+    setDatePickerVisibility(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  const handleConfirm = (date: Date) => {
+    if (isStartPicker) {
+      setTrip(prevTrip => ({
+        ...prevTrip,
+        start_date: firestore.Timestamp.fromDate(date),
+      }));
+    } else {
+      setTrip(prevTrip => ({
+        ...prevTrip,
+        end_date: firestore.Timestamp.fromDate(date),
+      }));
+    }
+    hideDatePicker();
+  };
+
+  const handleAttractionSelected = async (
+    dayIndex: number,
+    attraction: Attraction,
+    isMorning: boolean,
+  ) => {
+    try {
+      const updatedDays = trip.days.map((day, index) => {
+        if (index === dayIndex) {
+          return {
+            ...day,
+            [isMorning ? 'morning' : 'afternoon']: firestore()
+              .collection('attractions')
+              .doc(attraction.id),
+          };
+        }
+        return day;
+      });
+      console.log('Updated days: ', updatedDays);
+      setTrip(prevTrip => ({
+        ...prevTrip,
+        days: updatedDays,
+      }));
+      setAttractions(prevAttractions => {
+        const newAttractions = new Map(prevAttractions);
+        newAttractions.set(attraction.id, attraction);
+        return newAttractions;
+      });
+      console.log('Attraction selected and trip updated successfully.');
+    } catch (error) {
+      console.error('Error updating attraction: ', error);
+    }
   };
 
   const renderDay = ({
@@ -78,7 +154,7 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
     const afternoonAttraction = afternoon
       ? attractions.get(afternoon.id)
       : null;
-
+    console.log('Morning:', morningAttraction);
     return (
       <View style={styles.dayContainer}>
         <TouchableOpacity
@@ -110,11 +186,11 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
             <Pressable
               style={[styles.button, styles.secondaryButton]}
               onPress={() => {
-                if (morningAttraction) {
-                  navigation.navigate('EditAttraction', {
-                    attraction: morningAttraction,
-                  });
-                }
+                setSelectedDayIndex(index);
+                navigation.navigate('Cities', {
+                  onSelectAttraction: (attraction: Attraction) =>
+                    handleAttractionSelected(index, attraction, true),
+                });
               }}>
               <Text style={styles.buttonText}>Change</Text>
             </Pressable>
@@ -143,11 +219,11 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
             <Pressable
               style={[styles.button, styles.secondaryButton]}
               onPress={() => {
-                if (afternoonAttraction) {
-                  navigation.navigate('EditAttraction', {
-                    attraction: afternoonAttraction,
-                  });
-                }
+                setSelectedDayIndex(index);
+                navigation.navigate('Cities', {
+                  onSelectAttraction: (attraction: Attraction) =>
+                    handleAttractionSelected(index, attraction, false),
+                });
               }}>
               <Text style={styles.buttonText}>Change</Text>
             </Pressable>
@@ -156,10 +232,16 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
       </View>
     );
   };
-
+  console.log('Trip:', trip);
   return (
     <View style={styles.screen}>
       <CustomHeader title="Trip Detail" back={true} />
+      <DateTimePickerModal
+        isVisible={isDatePickerVisible}
+        mode="date"
+        onConfirm={handleConfirm}
+        onCancel={hideDatePicker}
+      />
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#0000ff" />
@@ -167,22 +249,34 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
       ) : (
         <>
           <View style={styles.tripInfo}>
-            <Text style={styles.tripName}>
-              {tripData.trip_name || 'Unnamed Trip'}
-            </Text>
-            <Text style={styles.tripDate}>
-              Start Date: {firebaseHelper.formatDate(tripData.start_date)}
-            </Text>
-            <Text style={styles.tripDate}>
-              End Date: {firebaseHelper.formatDate(tripData.end_date)}
-            </Text>
+            <Pressable onPress={() => showDatePicker(true)}>
+              <Text style={styles.tripDate}>
+                Start Date: {firebaseHelper.formatDate(trip.start_date)}
+              </Text>
+            </Pressable>
+            <Pressable onPress={() => showDatePicker(false)}>
+              <Text style={styles.tripDate}>
+                End Date: {firebaseHelper.formatDate(trip.end_date)}
+              </Text>
+            </Pressable>
           </View>
-          {tripData.days && tripData.days.length > 0 ? (
+          {trip.days && trip.days.length > 0 ? (
             <FlatList
-              data={tripData.days.filter(day => day.date !== null)}
+              data={trip.days.filter(day => day.date !== null)}
               keyExtractor={(item, index) => index.toString()}
               renderItem={renderDay}
               contentContainerStyle={styles.listContent}
+              ListFooterComponent={
+                <View style={styles.footerContainer}>
+                  <CommonButton
+                    text={'Add Day'}
+                    onPress={() => {
+                      // Implement the logic to add a day to the trip
+                      console.log('Adding day...');
+                    }}
+                  />
+                </View>
+              }
             />
           ) : (
             <View style={styles.noDaysContainer}>
@@ -191,13 +285,14 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
           )}
         </>
       )}
-      <TouchableOpacity
-        style={styles.saveButton}
-        onPress={() => {
-          /* Handle save action */
-        }}>
-        <Text style={styles.saveButtonText}>Save</Text>
-      </TouchableOpacity>
+      <View style={styles.saveButtonContainer}>
+        <CommonButton
+          text={'Save'}
+          onPress={saveTrip}
+          buttonStyle={styles.saveButton}
+          textStyle={styles.saveButtonText}
+        />
+      </View>
     </View>
   );
 };
@@ -206,6 +301,7 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: '#f9f9f9',
+    justifyContent: 'space-between', // Ensure Save button is at the bottom
   },
   tripInfo: {
     padding: 20,
@@ -315,13 +411,15 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 80, // To ensure Save button doesn't overlap with the list
   },
+  saveButtonContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    backgroundColor: '#f9f9f9', // Match the background color
+  },
   saveButton: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
     backgroundColor: '#28a745',
     paddingVertical: 15,
+    paddingHorizontal: 30,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
@@ -335,6 +433,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#fff',
     fontWeight: 'bold',
+  },
+  footerContainer: {
+    paddingBottom: 20,
+    alignItems: 'center',
   },
 });
 

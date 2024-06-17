@@ -1,21 +1,23 @@
-import React, {useEffect} from 'react';
-import {View, Text, StyleSheet, FlatList, Image} from 'react-native';
-import {useAppSelector} from '../../store/hook';
-import Citys from './Cities';
+import React from 'react';
+import {View, StyleSheet} from 'react-native';
 import CustomHeader from '../../common/CustomHeader';
+import CityList from './CityList';
 
-export default function CitiesScreen() {
+const CitiesScreen = ({route}) => {
+  const {onSelectAttraction} = route.params;
   return (
     <View style={styles.container}>
-      <CustomHeader title={'City'} back={false} />
+      <CustomHeader title="City" back />
+      <CityList onSelectAttraction={onSelectAttraction} />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
   },
 });
+
+export default CitiesScreen;

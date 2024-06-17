@@ -1,13 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  Image,
-  StyleSheet,
-  ActivityIndicator,
-  Pressable,
-} from 'react-native';
+import {View, Text, FlatList, Image, StyleSheet, Pressable} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import getWeatherForecast from '../../api/weather';
 import {City} from '../../type/city';
@@ -21,7 +13,8 @@ import {useNavigation} from '@react-navigation/native';
 type CityScreenProps = {
   route: {
     params: {
-      cityId: string;
+      cityId: number;
+      onSelectAttraction: Function;
     };
   };
 };
@@ -31,23 +24,27 @@ type Attraction = {
   name: string;
   image_url: string;
   description: string;
+  coordinates: {
+    latitude: number;
+    longitude: number;
+  };
 };
 
-const CityScreen = ({route}: CityScreenProps) => {
-  const {cityId} = route.params;
+const CityScreen: React.FC<CityScreenProps> = ({route}) => {
+  const {cityId, onSelectAttraction} = route.params;
   const [city, setCity] = useState<City | null>(null);
   const [attractions, setAttractions] = useState<Attraction[]>([]);
-
   const [weather, setWeather] = useState<WeatherEntry[]>();
   const dispatch = useAppDispatch();
-  const nav = useNavigation();
+  const navigation = useNavigation();
+
   useEffect(() => {
     const fetchCityData = async () => {
       dispatch(setLoading(true));
       try {
         const cityDoc = await firestore()
           .collection('cities')
-          .doc(cityId)
+          .doc(cityId.toString())
           .get();
         if (cityDoc.exists) {
           const cityData = cityDoc.data() as City;
@@ -63,7 +60,7 @@ const CityScreen = ({route}: CityScreenProps) => {
             cityData.coordinates.latitude,
             cityData.coordinates.longitude,
           ).then(weather => {
-            weather.shift();
+            weather.shift(); // Remove the current day's weather
             setWeather(weather);
           });
           setAttractions(attractionData);
@@ -82,7 +79,10 @@ const CityScreen = ({route}: CityScreenProps) => {
     <Pressable
       style={styles.itemContainer}
       onPress={() => {
-        nav.navigate('Attraction', {attraction: item});
+        navigation.navigate('Attraction', {
+          attraction: item,
+          onSelectAttraction,
+        });
       }}>
       <Text style={styles.title}>{item.name}</Text>
       <Image source={{uri: item.image_url}} style={styles.image} />
@@ -97,7 +97,7 @@ const CityScreen = ({route}: CityScreenProps) => {
           <Text style={styles.cityDescription}>{city.description}</Text>
         </View>
       )}
-      {weather && weather?.length > 0 && <WeatherComponent weather={weather} />}
+      {weather && weather.length > 0 && <WeatherComponent weather={weather} />}
       <FlatList
         data={attractions}
         renderItem={renderItem}
@@ -118,16 +118,6 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ccc',
     alignItems: 'center',
   },
-  cityName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  cityImage: {
-    width: '100%',
-    height: 200,
-    marginBottom: 5,
-  },
   cityDescription: {
     fontSize: 16,
     textAlign: 'center',
@@ -146,14 +136,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 200,
     marginBottom: 5,
-  },
-  weatherImage: {
-    width: 80,
-    height: 80,
-    resizeMode: 'contain',
-  },
-  description: {
-    fontSize: 16,
   },
 });
 

@@ -1,17 +1,20 @@
 import React from 'react';
-import {View, FlatList, Text, Image, StyleSheet, Pressable} from 'react-native';
+import {View, FlatList, Text, StyleSheet, Pressable} from 'react-native';
 import {useAppSelector} from '../../store/hook';
 import {City} from '../../type/city';
-import firebaseHelper from '../../firebase/firebaseHelper';
 import FastImage from 'react-native-fast-image';
 import {useNavigation} from '@react-navigation/native';
 
-const Citys: React.FC = () => {
+const CityList: React.FC<{onSelectAttraction: Function}> = ({
+  onSelectAttraction,
+}) => {
   const locations = useAppSelector(state => state.cities.locations);
   const navigation = useNavigation();
+
   const navigateToCity = (id: number) => {
-    navigation.navigate('City', {cityId: id});
+    navigation.navigate('City', {cityId: id, onSelectAttraction});
   };
+
   const renderCity = ({item}: {item: City}) => (
     <Pressable
       style={styles.cityContainer}
@@ -24,14 +27,6 @@ const Citys: React.FC = () => {
     </Pressable>
   );
 
-  if (!locations || locations.length === 0) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text>No cities available</Text>
-      </View>
-    );
-  }
-
   return (
     <FlatList
       data={locations}
@@ -42,11 +37,6 @@ const Citys: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   cityContainer: {
     padding: 16,
     borderBottomWidth: 1,
@@ -67,28 +57,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
   },
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
-  },
-  input: {
-    height: 40,
-    width: '100%',
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-  },
-  error: {
-    color: 'red',
-    marginBottom: 10,
-  },
 });
 
-export default Citys;
+export default CityList;

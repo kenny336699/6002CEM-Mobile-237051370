@@ -55,43 +55,44 @@ const TripScreen: React.FC<TripScreenProps> = ({navigation}) => {
   return (
     <View style={styles.screen}>
       <CustomHeader title="Trip" back={false} />
-      <FlatList
-        data={trip}
-        keyExtractor={trip => trip.id}
-        renderItem={renderTrip}
-        ListEmptyComponent={
-          <View style={styles.noItemContainer}>
-            <FastImage
-              source={require('../../assets/images/plan/emptyPlans.png')}
-              style={styles.emptyImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.noItemLabel}>No trips available</Text>
-            <Pressable
-              style={styles.button}
-              onPress={() =>
-                navigation.navigate(profile ? 'CreateTrip' : 'Login')
-              }>
-              <Text style={styles.buttonText}>
-                {profile ? 'Create Trip' : 'Please Login'}
-              </Text>
-            </Pressable>
-          </View>
-        }
-        ListFooterComponent={
-          <View style={styles.footerContainer}>
-            <Pressable
-              style={styles.button}
-              onPress={() =>
-                navigation.navigate(profile ? 'CreateTrip' : 'Login')
-              }>
-              <Text style={styles.buttonText}>
-                {profile ? 'Create Trip' : 'Please Login'}
-              </Text>
-            </Pressable>
-          </View>
-        }
-      />
+      {trip?.length > 0 ? (
+        <FlatList
+          data={trip}
+          keyExtractor={trip => trip.id}
+          renderItem={renderTrip}
+          ListFooterComponent={
+            <View style={styles.footerContainer}>
+              <Pressable
+                style={styles.button}
+                onPress={() =>
+                  navigation.navigate(profile ? 'CreateTrip' : 'Login')
+                }>
+                <Text style={styles.buttonText}>
+                  {profile ? 'Create Trip' : 'Please Login'}
+                </Text>
+              </Pressable>
+            </View>
+          }
+        />
+      ) : (
+        <View style={styles.noItemContainer}>
+          <FastImage
+            source={require('../../assets/images/plan/emptyPlans.png')}
+            style={styles.emptyImage}
+            resizeMode="contain"
+          />
+          <Text style={styles.noItemLabel}>No trips available</Text>
+          <Pressable
+            style={styles.button}
+            onPress={() =>
+              navigation.navigate(profile ? 'CreateTrip' : 'Login')
+            }>
+            <Text style={styles.buttonText}>
+              {profile ? 'Create Trip' : 'Please Login'}
+            </Text>
+          </Pressable>
+        </View>
+      )}
     </View>
   );
 };

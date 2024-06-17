@@ -5,6 +5,7 @@ import auth from '@react-native-firebase/auth';
 import {useAppDispatch, useAppSelector} from '../store/hook';
 import {setUserProfile} from '../reducers/userReducer';
 import firebaseHelper from '../firebase/firebaseHelper';
+import {clearTrips} from '../reducers/tripReducer';
 
 const HomeHeader = () => {
   const nav = useNavigation();
@@ -15,6 +16,7 @@ const HomeHeader = () => {
     try {
       firebaseHelper.firebaseLogout();
       dispatch(setUserProfile(null));
+      dispatch(clearTrips());
       nav.navigate('Home');
     } catch (error) {
       console.error(error);

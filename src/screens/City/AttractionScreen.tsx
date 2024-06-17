@@ -1,16 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  Image,
-  StyleSheet,
-  ActivityIndicator,
-  Pressable,
-} from 'react-native';
-import firestore from '@react-native-firebase/firestore';
+import {View, Text, Image, StyleSheet, Pressable} from 'react-native';
 import getWeatherForecast from '../../api/weather';
-import {Attraction, City} from '../../type/city';
 import {WeatherEntry} from '../../type/weather';
 import WeatherComponent from '../../common/WeatherComponent';
 import CustomHeader from '../../common/CustomHeader';
@@ -20,46 +10,69 @@ import {setLoading} from '../../reducers/appReducer';
 type AttractionScreenProps = {
   route: {
     params: {
-      attraction: Attraction;
+      attraction: {
+        id: string;
+        name: string;
+        image_url: string;
+        description: string;
+        coordinates: {
+          latitude: number;
+          longitude: number;
+        };
+      };
+      onSelectAttraction: Function;
     };
   };
 };
 
-const AttractionScreen = ({route}: AttractionScreenProps) => {
-  const {attraction} = route.params;
-
+const AttractionScreen: React.FC<AttractionScreenProps> = ({
+  route,
+  navigation,
+}) => {
+  const {attraction, onSelectAttraction} = route.params;
   const [weather, setWeather] = useState<WeatherEntry[]>();
   const dispatch = useAppDispatch();
+
   useEffect(() => {
-    const fetchCityData = async () => {
+    const fetchWeatherData = async () => {
       dispatch(setLoading(true));
       try {
-        getWeatherForecast(
+        const weatherData = await getWeatherForecast(
           attraction.coordinates.latitude,
           attraction.coordinates.longitude,
-        ).then(weather => {
-          weather.shift();
-          setWeather(weather);
-        });
+        );
+        weatherData.shift(); // Remove the current day's weather
+        setWeather(weatherData);
       } catch (error) {
-        console.error('Error getting city and attractions:', error);
+        console.error('Error getting weather data:', error);
       } finally {
         dispatch(setLoading(false));
       }
     };
 
-    fetchCityData();
-  }, []);
+    fetchWeatherData();
+  }, [attraction.coordinates.latitude, attraction.coordinates.longitude]);
 
   return (
     <View style={styles.container}>
-      <CustomHeader title={attraction?.name || 'Attraction'} back />
-
-      {weather && weather?.length > 0 && <WeatherComponent weather={weather} />}
+      <CustomHeader title={attraction.name} back />
+      {weather && weather.length > 0 && <WeatherComponent weather={weather} />}
       <View style={styles.itemContainer}>
         <Text style={styles.title}>{attraction.name}</Text>
         <Image source={{uri: attraction.image_url}} style={styles.image} />
         <Text style={styles.description}>{attraction.description}</Text>
+        {onSelectAttraction && (
+          <Pressable
+            style={styles.addButton}
+            onPress={() => {
+              onSelectAttraction(attraction);
+              navigation.goBack();
+              navigation.goBack();
+              navigation.goBack();
+            }}>
+            <Text style={styles.addButtonText}>Add</Text>
+          </Pressable>
+        )}
       </View>
     </View>
   );
@@ -70,28 +83,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  cityContainer: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    alignItems: 'center',
-  },
-  cityName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  cityImage: {
-    width: '100%',
-    height: 200,
-    marginBottom: 5,
-  },
-  cityDescription: {
-    fontSize: 16,
-    textAlign: 'center',
-  },
   itemContainer: {
-    padding: 10,
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
@@ -105,13 +98,21 @@ const styles = StyleSheet.create({
     height: 200,
     marginBottom: 5,
   },
-  weatherImage: {
-    width: 80,
-    height: 80,
-    resizeMode: 'contain',
-  },
   description: {
     fontSize: 16,
+  },
+  addButton: {
+    marginTop: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#28a745',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

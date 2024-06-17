@@ -17,14 +17,14 @@ const getWeatherForecast = async (
   longitude: number,
 ): Promise<WeatherEntry[]> => {
   try {
-    const response = await axios.get(BASE_URL, {
-      params: {
-        location: `${latitude},${longitude}`,
-        fields: 'temperature',
-        timesteps: '1d',
-        apikey: API_KEY,
-      },
-    });
+    // const response = await axios.get(BASE_URL, {
+    //   params: {
+    //     location: `${latitude},${longitude}`,
+    //     fields: 'temperature',
+    //     timesteps: '1d',
+    //     apikey: API_KEY,
+    //   },
+    // });
     //    const usefulData: WeatherData[] = response.data.timelines.daily;
     const usefulData: WeatherData[] = [
       {

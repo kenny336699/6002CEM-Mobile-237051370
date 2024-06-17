@@ -69,12 +69,19 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
 
   const saveTrip = async () => {
     try {
+      console.log('Saving trip...', {
+        start_date: trip.start_date,
+        end_date: trip.end_date,
+        days: trip.days, // Update the days array
+      });
+
       await firestore().collection('trips').doc(trip.id).update({
         start_date: trip.start_date,
         end_date: trip.end_date,
         days: trip.days, // Update the days array
       });
-      console.log('Trip saved.');
+
+      console.log('Trip saved successfully');
     } catch (error) {
       console.error('Error saving trip: ', error);
     }
@@ -129,6 +136,10 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
       setAttractions(prevAttractions => {
         const newAttractions = new Map(prevAttractions);
         newAttractions.set(attraction.id, attraction);
+        console.log(
+          'Attraction selected and trip updated successfully.',
+          newAttractions,
+        );
         return newAttractions;
       });
       console.log('Attraction selected and trip updated successfully.');
@@ -154,7 +165,7 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
     const afternoonAttraction = afternoon
       ? attractions.get(afternoon.id)
       : null;
-    console.log('Morning:', morningAttraction);
+
     return (
       <View style={styles.dayContainer}>
         <TouchableOpacity
@@ -232,7 +243,7 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
       </View>
     );
   };
-  console.log('Trip:', trip);
+
   return (
     <View style={styles.screen}>
       <CustomHeader title="Trip Detail" back={true} />

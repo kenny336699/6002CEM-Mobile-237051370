@@ -1,24 +1,47 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, TextInput, Button, StyleSheet, Alert} from 'react-native';
 import FastTranslator from 'fast-mlkit-translate-text';
+import {useAppDispatch} from '../../store/hook';
+import {setLoading} from '../../reducers/appReducer';
 
 const TranslateScreen: React.FC = () => {
   const [inputText, setInputText] = useState<string>('');
   const [identifiedLanguage, setIdentifiedLanguage] = useState<string>('');
   const [translatedText, setTranslatedText] = useState<string>('');
-
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    FastTranslator.prepare({
+      source: 'Japanese',
+      target: 'English',
+      downloadIfNeeded: true,
+    });
+  }, []);
   const handleTranslation = async () => {
     try {
       // Identify the language
-      const language = await FastTranslator.identify(inputText);
-      setIdentifiedLanguage(language);
+      setTimeout(() => {
+        setTranslatedText(
+          'Sorry, this app only supports Japanese to English translation',
+        );
+        dispatch(setLoading(false));
+      }, 5000);
+      dispatch(setLoading(true));
+      const lang = await FastTranslator.identify(inputText);
+
+      setIdentifiedLanguage(lang);
 
       // Translate the text
-      const translated = await FastTranslator.translate(inputText);
-      setTranslatedText(translated);
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
+      if (lang === 'ja') {
+        const translated = await FastTranslator.translate(inputText);
+        setTranslatedText(translated);
+      } else {
+        setTranslatedText(
+          'Sorry, this app only supports English to Japanese translation',
+        );
+      }
+
+      dispatch(setLoading(false));
+    } catch (error) {}
   };
 
   return (

@@ -69,19 +69,11 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
 
   const saveTrip = async () => {
     try {
-      console.log('Saving trip...', {
-        start_date: trip.start_date,
-        end_date: trip.end_date,
-        days: trip.days, // Update the days array
-      });
-
       await firestore().collection('trips').doc(trip.id).update({
         start_date: trip.start_date,
         end_date: trip.end_date,
         days: trip.days, // Update the days array
       });
-
-      console.log('Trip saved successfully');
     } catch (error) {
       console.error('Error saving trip: ', error);
     }
@@ -277,17 +269,6 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
               keyExtractor={(item, index) => index.toString()}
               renderItem={renderDay}
               contentContainerStyle={styles.listContent}
-              ListFooterComponent={
-                <View style={styles.footerContainer}>
-                  <CommonButton
-                    text={'Add Day'}
-                    onPress={() => {
-                      // Implement the logic to add a day to the trip
-                      console.log('Adding day...');
-                    }}
-                  />
-                </View>
-              }
             />
           ) : (
             <View style={styles.noDaysContainer}>
@@ -297,12 +278,7 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
         </>
       )}
       <View style={styles.saveButtonContainer}>
-        <CommonButton
-          text={'Save'}
-          onPress={saveTrip}
-          buttonStyle={styles.saveButton}
-          textStyle={styles.saveButtonText}
-        />
+        <CommonButton text={'Save'} onPress={saveTrip} />
       </View>
     </View>
   );

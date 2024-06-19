@@ -6,6 +6,7 @@ import AttractionScreen from '../screens/City/AttractionScreen';
 import LoginScreen from '../screens/Auth/LoginScreen';
 import TripDetailScreen from '../screens/Trip/TripDetailScreen';
 import CitiesScreen from '../screens/City/CitiesScreen';
+import AddTripScreen from '../screens/Trip/AddTripScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -41,6 +42,11 @@ function StackNav() {
         <Stack.Screen
           name="Cities"
           component={CitiesScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="CreateTrip"
+          component={AddTripScreen}
           options={{headerShown: false}}
         />
       </Stack.Navigator>

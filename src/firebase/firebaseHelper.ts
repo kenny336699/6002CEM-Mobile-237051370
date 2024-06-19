@@ -288,35 +288,23 @@ const formatDate = (date: FirebaseFirestoreTypes.Timestamp | null): string => {
   }
 };
 
-const fetchTrips = async (email: string) => {
+const fetchTrips = async (email: string): Promise<Trip[]> => {
   try {
-    const tripsRef = firestore().collection('trips');
-    const querySnapshot = await tripsRef.where('user_id', '==', email).get();
+    const snapshot = await firestore()
+      .collection('trips')
+      .where('user_id', '==', email)
+      .get();
 
-    const tripsData: Trip[] = querySnapshot.docs.map(doc => {
-      const data = doc.data() as Trip;
-      const startDate =
-        data.start_date instanceof firebase.firestore.Timestamp
-          ? data.start_date
-          : null;
-      const endDate =
-        data.end_date instanceof firebase.firestore.Timestamp
-          ? data.end_date
-          : null;
-
+    const trips: Trip[] = snapshot.docs.map(doc => {
       return {
         id: doc.id,
-        user_id: data.user_id,
-        trip_name: data.trip_name,
-        start_date: startDate,
-        end_date: endDate,
-        days: data.days || [],
-      };
+        ...doc.data(),
+      } as Trip;
     });
-    return tripsData;
+
+    return trips;
   } catch (error) {
-    console.error('Error fetching trips: ', error);
-    throw error;
+    throw new Error('Error fetching trips');
   }
 };
 

@@ -1,16 +1,17 @@
-import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, FlatList, Pressable} from 'react-native';
+import React from 'react';
+import {View, Text, StyleSheet, FlatList, Pressable, Alert} from 'react-native';
 import CustomHeader from '../../common/CustomHeader';
 import FastImage from 'react-native-fast-image';
-import {useAppSelector} from '../../store/hook';
+import {useAppSelector, useAppDispatch} from '../../store/hook';
 import {NavigationProp} from '@react-navigation/native';
 import {
   FirebaseFirestoreTypes,
   firebase,
 } from '@react-native-firebase/firestore';
-import {format, set} from 'date-fns';
+import {format} from 'date-fns';
 import {Trip} from '../../type/trip';
 import firebaseHelper from '../../firebase/firebaseHelper';
+import {deleteTrip} from '../../reducers/tripReducer';
 
 interface TripScreenProps {
   navigation: NavigationProp<any>;
@@ -18,7 +19,8 @@ interface TripScreenProps {
 
 const TripScreen: React.FC<TripScreenProps> = ({navigation}) => {
   const profile = useAppSelector(state => state.user.userProfile);
-  const trip = useAppSelector(state => state.trips.trips);
+  const trips = useAppSelector(state => state.trips.trips);
+  const dispatch = useAppDispatch();
 
   const calculateTotalDays = (
     startDate: FirebaseFirestoreTypes.Timestamp | null,
@@ -35,29 +37,65 @@ const TripScreen: React.FC<TripScreenProps> = ({navigation}) => {
     return `${diffDays} days`;
   };
 
+  const confirmRemoveTrip = (tripId: string) => {
+    Alert.alert(
+      'Remove Trip',
+      'Are you sure you want to remove this trip?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: () => handleRemoveTrip(tripId),
+        },
+      ],
+      {cancelable: true},
+    );
+  };
+
+  const handleRemoveTrip = async (tripId: string) => {
+    try {
+      await firebase.firestore().collection('trips').doc(tripId).delete();
+      dispatch(deleteTrip(tripId)); // Update the Redux state
+      Alert.alert('Success', 'Trip successfully removed.');
+    } catch (error) {
+      console.error('Error removing trip: ', error);
+      Alert.alert('Error', 'Failed to remove trip.');
+    }
+  };
+
   const renderTrip = ({item}: {item: Trip}) => (
-    <Pressable
-      style={styles.tripContainer}
-      onPress={() => navigation.navigate('TripDetail', {tripData: item})}>
-      <Text style={styles.tripName}>{item.trip_name}</Text>
-      <Text style={styles.tripDate}>
-        Start Date: {firebaseHelper.formatDate(item.start_date)}
-      </Text>
-      <Text style={styles.tripDate}>
-        End Date: {firebaseHelper.formatDate(item.end_date)}
-      </Text>
-      <Text style={styles.tripDays}>
-        Total Days: {calculateTotalDays(item.start_date, item.end_date)}
-      </Text>
-    </Pressable>
+    <View style={styles.tripContainer}>
+      <Pressable
+        onPress={() => navigation.navigate('TripDetail', {tripData: item})}>
+        <Text style={styles.tripName}>{item.trip_name}</Text>
+        <Text style={styles.tripDate}>
+          Start Date: {firebaseHelper.formatDate(item.start_date)}
+        </Text>
+        <Text style={styles.tripDate}>
+          End Date: {firebaseHelper.formatDate(item.end_date)}
+        </Text>
+        <Text style={styles.tripDays}>
+          Total Days: {calculateTotalDays(item.start_date, item.end_date)}
+        </Text>
+      </Pressable>
+      <Pressable
+        style={styles.removeButton}
+        onPress={() => confirmRemoveTrip(item.id)}>
+        <Text style={styles.removeButtonText}>Remove Trip</Text>
+      </Pressable>
+    </View>
   );
 
   return (
     <View style={styles.screen}>
       <CustomHeader title="Trip" back={false} />
-      {trip?.length > 0 ? (
+      {trips?.length > 0 ? (
         <FlatList
-          data={trip}
+          data={trips}
           keyExtractor={trip => trip.id}
           renderItem={renderTrip}
           ListFooterComponent={
@@ -127,6 +165,19 @@ const styles = StyleSheet.create({
     color: '#555',
     marginTop: 5,
     fontWeight: '600',
+  },
+  removeButton: {
+    marginTop: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#dc3545',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  removeButtonText: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: 'bold',
   },
   noItemContainer: {
     paddingTop: 80,

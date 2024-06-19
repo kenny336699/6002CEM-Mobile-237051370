@@ -29,9 +29,13 @@ const AddTripScreen: React.FC = () => {
     useState<boolean>(false);
   const [isStartPicker, setIsStartPicker] = useState<boolean>(true);
   const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
+  const [attractionNames, setAttractionNames] = useState<{
+    [key: string]: string;
+  }>({});
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const profile = useAppSelector(state => state.user.userProfile);
+
   const showDatePicker = (isStart: boolean) => {
     setIsStartPicker(isStart);
     setDatePickerVisibility(true);
@@ -49,6 +53,25 @@ const AddTripScreen: React.FC = () => {
     }
     hideDatePicker();
   };
+
+  useEffect(() => {
+    const fetchAttractionNames = async () => {
+      const names: {[key: string]: string} = {};
+      for (const day of days) {
+        if (day.morning) {
+          const doc = await day.morning.get();
+          names[day.morning.id] = doc.data()?.name || 'Unknown';
+        }
+        if (day.afternoon) {
+          const doc = await day.afternoon.get();
+          names[day.afternoon.id] = doc.data()?.name || 'Unknown';
+        }
+      }
+      setAttractionNames(names);
+    };
+
+    fetchAttractionNames();
+  }, [days]);
 
   const addDay = () => {
     let nextDate: Date;
@@ -127,8 +150,12 @@ const AddTripScreen: React.FC = () => {
   };
 
   const renderDay = ({item, index}: {item: Day; index: number}) => {
-    const morningAttraction = item.morning ? item.morning.id : null;
-    const afternoonAttraction = item.afternoon ? item.afternoon.id : null;
+    const morningAttraction = item.morning
+      ? attractionNames[item.morning.id]
+      : null;
+    const afternoonAttraction = item.afternoon
+      ? attractionNames[item.afternoon.id]
+      : null;
 
     return (
       <View style={styles.dayContainer}>
@@ -214,11 +241,7 @@ const AddTripScreen: React.FC = () => {
         }
       />
       <View style={styles.saveButtonContainer}>
-        <CommonButton
-          text="Save Trip"
-          onPress={saveTrip}
-          buttonStyle={styles.saveButton}
-        />
+        <CommonButton text="Save Trip" onPress={saveTrip} />
       </View>
     </View>
   );

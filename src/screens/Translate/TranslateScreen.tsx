@@ -11,8 +11,8 @@ const TranslateScreen: React.FC = () => {
   const dispatch = useAppDispatch();
   useEffect(() => {
     FastTranslator.prepare({
-      source: 'English',
-      target: 'Japanese',
+      source: 'Japanese',
+      target: 'English',
       downloadIfNeeded: true,
     });
   }, []);
@@ -21,7 +21,7 @@ const TranslateScreen: React.FC = () => {
       // Identify the language
       setTimeout(() => {
         setTranslatedText(
-          'Sorry, this app only supports English to Japanese translation',
+          'Sorry, this app only supports Japanese to English translation',
         );
         dispatch(setLoading(false));
       }, 5000);

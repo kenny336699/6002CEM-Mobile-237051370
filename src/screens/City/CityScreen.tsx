@@ -1,7 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, FlatList, Image, StyleSheet, Pressable} from 'react-native';
-import firestore from '@react-native-firebase/firestore';
-import getWeatherForecast from '../../api/weather';
 import {City} from '../../type/city';
 import {WeatherEntry} from '../../type/weather';
 import WeatherComponent from '../../common/WeatherComponent';
@@ -9,6 +7,7 @@ import CustomHeader from '../../common/CustomHeader';
 import {useAppDispatch} from '../../store/hook';
 import {setLoading} from '../../reducers/appReducer';
 import {useNavigation} from '@react-navigation/native';
+import firebaseHelper from '../../firebase/firebaseHelper';
 
 type CityScreenProps = {
   route: {
@@ -42,38 +41,20 @@ const CityScreen: React.FC<CityScreenProps> = ({route}) => {
     const fetchCityData = async () => {
       dispatch(setLoading(true));
       try {
-        const cityDoc = await firestore()
-          .collection('cities')
-          .doc(cityId.toString())
-          .get();
-        if (cityDoc.exists) {
-          const cityData = cityDoc.data() as City;
-          setCity(cityData);
-          const attractionRefs = cityData.attractions || [];
-          const attractionDocs = await Promise.all(
-            attractionRefs.map(ref => ref.get()),
-          );
-          const attractionData = attractionDocs.map(
-            doc => ({id: doc.id, ...doc.data()} as Attraction),
-          );
-          getWeatherForecast(
-            cityData.coordinates.latitude,
-            cityData.coordinates.longitude,
-          ).then(weather => {
-            weather.shift(); // Remove the current day's weather
-            setWeather(weather);
-          });
-          setAttractions(attractionData);
-        }
+        const {cityData, attractionData, weather} =
+          await firebaseHelper.fetchCityWithAttractions(cityId.toString());
+        setCity(cityData);
+        setAttractions(attractionData);
+        setWeather(weather);
       } catch (error) {
-        console.error('Error getting city and attractions:', error);
+        console.log('Error getting city and attractions:', error);
       } finally {
         dispatch(setLoading(false));
       }
     };
 
     fetchCityData();
-  }, [cityId]);
+  }, [cityId, dispatch]);
 
   const renderItem = ({item}: {item: Attraction}) => (
     <Pressable

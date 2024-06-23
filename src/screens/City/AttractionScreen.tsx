@@ -34,25 +34,23 @@ const AttractionScreen: React.FC<AttractionScreenProps> = ({
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const fetchWeatherData = async () => {
-      dispatch(setLoading(true));
-      try {
-        const weatherData = await getWeatherForecast(
-          attraction.coordinates.latitude,
-          attraction.coordinates.longitude,
-        );
-        weatherData.shift(); // Remove the current day's weather
-        setWeather(weatherData);
-      } catch (error) {
-        console.error('Error getting weather data:', error);
-      } finally {
-        dispatch(setLoading(false));
-      }
-    };
-
     fetchWeatherData();
   }, [attraction.coordinates.latitude, attraction.coordinates.longitude]);
-
+  const fetchWeatherData = async () => {
+    dispatch(setLoading(true));
+    try {
+      const weatherData = await getWeatherForecast(
+        attraction.coordinates.latitude,
+        attraction.coordinates.longitude,
+      );
+      weatherData.shift(); // Remove the current day's weather
+      setWeather(weatherData);
+    } catch (error) {
+      console.error('Error getting weather data:', error);
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
   return (
     <View style={styles.container}>
       <CustomHeader title={attraction.name} back />

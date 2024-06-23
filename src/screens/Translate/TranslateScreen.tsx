@@ -18,17 +18,8 @@ const TranslateScreen: React.FC = () => {
   }, []);
   const handleTranslation = async () => {
     try {
-      // Identify the language
-      setTimeout(() => {
-        setTranslatedText(
-          'Sorry, this app only supports Japanese to English translation',
-        );
-        dispatch(setLoading(false));
-      }, 5000);
       dispatch(setLoading(true));
       const lang = await FastTranslator.identify(inputText);
-
-      setIdentifiedLanguage(lang);
 
       // Translate the text
       if (lang === 'ja') {
@@ -55,11 +46,6 @@ const TranslateScreen: React.FC = () => {
       />
       <Button title="Translate" onPress={handleTranslation} />
       <View style={styles.resultContainer}>
-        {identifiedLanguage ? (
-          <Text style={styles.result}>
-            Identified Language: {identifiedLanguage}
-          </Text>
-        ) : null}
         {translatedText ? (
           <Text style={styles.result}>Translated Text: {translatedText}</Text>
         ) : null}

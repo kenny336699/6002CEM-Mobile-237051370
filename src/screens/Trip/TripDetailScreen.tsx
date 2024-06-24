@@ -62,11 +62,6 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
     }
   };
 
-  const deleteDay = (index: number) => {
-    // Implement the logic to delete the day from the tripData.days array and update Firestore if necessary
-    console.log(`Deleting day at index: ${index}`);
-  };
-
   const saveTrip = async () => {
     try {
       await firestore().collection('trips').doc(trip.id).update({
@@ -74,6 +69,7 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
         end_date: trip.end_date,
         days: trip.days, // Update the days array
       });
+      nav.goBack();
     } catch (error) {
       console.error('Error saving trip: ', error);
     }
@@ -160,11 +156,6 @@ const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
 
     return (
       <View style={styles.dayContainer}>
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => deleteDay(index)}>
-          <Text style={styles.deleteButtonText}>X</Text>
-        </TouchableOpacity>
         <Text style={styles.dayDate}>
           Date: {date ? format(date.toDate(), 'dd MMMM yyyy') : 'Unknown Date'}
         </Text>

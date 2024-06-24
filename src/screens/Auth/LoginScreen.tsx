@@ -12,8 +12,8 @@ import firebaseHelper from '../../firebase/firebaseHelper';
 const leftArrow = require('../../assets/images/icon/Arrow_alt_left_alt.png');
 
 const LoginScreen = () => {
-  const [email, setEmail] = useState('t12321@yop.com');
-  const [password, setPassword] = useState('123456');
+  const [email, setEmail] = useState();
+  const [password, setPassword] = useState();
   const [displayName, setDisplayName] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
   const [isRegister, setIsRegister] = useState(false);

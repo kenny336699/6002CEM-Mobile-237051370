@@ -9,7 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
-import {useAppSelector} from '../../store/hook';
+
 import {WeatherEntry} from '../../type/weather';
 import getWeatherForecast from '../../api/weather';
 import HomeHeader from '../../common/HomeHeader';

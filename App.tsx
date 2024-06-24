@@ -32,7 +32,8 @@ const Root = () => {
 
   useEffect(() => {
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-    return () => subscriber();
+    //firebaseHelper.addLandmarks();
+    return () => subscriber(); // unsubscribe on unmount
   }, []);
 
   const onAuthStateChanged = user => {

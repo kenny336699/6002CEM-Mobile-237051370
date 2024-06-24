@@ -8,8 +8,8 @@ import {
   weather,
 } from '../type/weather';
 
-//const API_KEY = 'zSdzq4jpHSNkHYDL7IGOcSjTTPLL7ySB';
-const API_KEY = '9iiMF8Qhnic8yVcZ3w8dgc9YJSV3f0NH';
+const API_KEY = 'zSdzq4jpHSNkHYDL7IGOcSjTTPLL7ySB';
+//const API_KEY = '9iiMF8Qhnic8yVcZ3w8dgc9YJSV3f0NH';
 const BASE_URL = 'https://api.tomorrow.io/v4/weather/forecast';
 
 const getWeatherForecast = async (

@@ -6,7 +6,6 @@ import {setLoading} from '../../reducers/appReducer';
 
 const TranslateScreen: React.FC = () => {
   const [inputText, setInputText] = useState<string>('');
-  const [identifiedLanguage, setIdentifiedLanguage] = useState<string>('');
   const [translatedText, setTranslatedText] = useState<string>('');
   const dispatch = useAppDispatch();
   useEffect(() => {
@@ -32,7 +31,10 @@ const TranslateScreen: React.FC = () => {
       }
 
       dispatch(setLoading(false));
-    } catch (error) {}
+    } catch (error) {
+    } finally {
+      dispatch(setLoading(false));
+    }
   };
 
   return (

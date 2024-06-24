@@ -40,7 +40,7 @@ function BottomTabNav() {
         name="Trip"
         component={TripScreen}
         options={{
-          tabBarLabel: 'Plan',
+          tabBarLabel: 'Trip',
           tabBarIcon: ({focused}) => {
             const source = !focused
               ? require('../assets/images/bottomTabs/plan1.png')
